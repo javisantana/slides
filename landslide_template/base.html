@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>{{ head_title }}</title>
+    <!-- Styles -->
+    {% if embed %}
+    <style type="text/css" media="print">
+      {{ css.print.contents }}
+    </style>
+    <style type="text/css" media="screen, projection">
+      {{ css.screen.contents }}
+    </style>
+    {% else %}
+    <link rel="stylesheet" media="print" href="{{ css.print.path_url }}">
+    <link rel="stylesheet" media="screen, projection" href="{{ css.screen.path_url }}">
+    {% endif %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
+    <!-- /Styles -->
+    <script>
+        curr_slide = 1;
+        function goto(slide) {
+            $('.slide').hide()
+            $('#slide_'+slide).show()
+            curr_slide = slide;
+            window.location.hash = slide
+            $('#next').attr('href', '#' + (slide+1))
+            $('#prev').attr('href', '#' + (slide-1))
+        }
+        function next() {
+            goto(curr_slide + 1);
+        }
+        function prev() {
+            goto(curr_slide - 1);
+        }
+        $(window).load(function() {
+            if(window.location.hash != '') {
+                goto(parseInt(window.location.hash.slice(1)));
+            } else {
+                goto(1);
+            }
+            
+            $("#next").click(function() {
+                next();
+                return false;
+            })
+            $("#prev").click(function() {
+                prev();
+                return false;
+            })
+
+            $("#show").click(function() {
+                if ($('p').is(":visible")) {
+                    $('p').css({'display': 'none'});
+                } else {
+                    $('p').fadeIn(); //css({'display': 'block'});
+                }
+            });
+              var handleBodyKeyDown = function(event) {
+                // console.log(event.keyCode);
+                switch (event.keyCode) {
+                  case 37: // left arrow
+                    prev();
+                    break;
+                  case 39: // right arrow
+                  case 32: // space
+                    next();
+                    break;
+                }
+              };
+            document.addEventListener('keydown', handleBodyKeyDown, false);
+        });
+    </script>
+</head>
+<body>
+  <div id="header">
+    <div id="header_content">
+        {{ slides.0.header }}
+        <div id="control" >
+            <a id="prev" href="#"> &larr; prev </a>
+            <a id="show" href="#">comments</a>
+            <a id="next" href="#"> next &rarr;</a>
+        </div>
+    </div>
+  </div>
+  <div class="presentation">
+    <div class="slides">
+      {% for slide in slides %}
+      <!-- slide source: {% if slide.source %}{{ slide.source.rel_path }}{% endif %} -->
+      <div id="slide_{{slide.number}}" class="slide{% if slide.classes %}{% for class in slide.classes %} {{ class }}{% endfor %}{% endif %}">
+        <div class="inner">
+          {% if slide.header %}
+          <header>{{ slide.header }}</header>
+          {% endif %}
+          {% if slide.content %}
+          <section>{{ slide.content }}</section>
+          {% endif %}
+        </div>
+        <footer>
+          {% if slide.source %}
+          <aside class="source">
+            Source: <a href="file://{{ slide.source.abs_path }}">{{ slide.source.rel_path }}</a>
+          </aside>
+          {% endif %}
+          <aside class="page_number">
+            {{ slide.number }}/{{ num_slides }}
+          </aside>
+        </footer>
+      </div>
+      {% endfor %}
+    </div>
+      {% if 0 %}
+      <div id="toc" class="sidebar hiden">
+        <h2>Table of Contents</h2>
+        <table>
+          <caption>Table of Contents</caption>
+          {% for section in toc %}      
+          <tr id="toc-row-{{ section.number }}">
+            <th><a href="#{{ section.number }}">{{ section.title }}</a></th>
+            <td><a href="#{{ section.number }}">{{ section.number }}</a></td>
+          </tr>
+          {% if section.sub %}
+            {% for subsection in section.sub %}
+            <tr id="toc-row-{{ subsection.number }}" class="sub">
+              <th><a href="#{{ subsection.number }}">{{ subsection.title }}</a></th>
+              <td><a href="#{{ subsection.number }}">{{ subsection.number }}</a></td>
+            </tr>
+            {% endfor %}
+          {% endif %}
+          {% endfor %}
+        </table>
+      </div>
+      {% endif %}
+  </div>
+</body>
+</html>
