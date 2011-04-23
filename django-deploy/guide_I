@@ -1,0 +1,47 @@
+# 
+# -- deploy I --
+#
+
+# create a vm 
+# a vagrant box is already in the system
+
+mkidr vm
+cd vm
+vagrant init
+# edit Vagrant file and add to config
+# config.vm.forward_port "http", 8000, 8000
+vagrant up
+
+# a new vm is running with ssh on 2222 (host machine)
+# now connect to it
+vagrant ssh 
+
+# base deploy
+sudo aptitude -y update
+sudo aptitude -y install git-core python-dev build-essential python-setuptools
+
+# explain some easy_install, pip, virtualenv history
+# vagrant@vagrantup:~$ python -V
+# Python 2.6.5
+# clone repo
+git clone git://github.com/javisantana/django-template.git app
+cd app/django-template
+
+# install now virtualenv
+sudo easy_install virtualenv
+sudo easy_install pip
+pip install -E env -r requirements.txt
+# explain PYTHONPATH, sys.path, site and --no-site-packages
+
+# prepare and launch
+./env/bin/python manage.py syncdb
+./env/bin/python manage.py migrate
+./env/bin/python manage.py runserver
+# running on 8000
+
+# now test server from *host* machine
+# install apache benchmark
+sudo aptitude install ab
+ab -n 1000 -c 1 http://127.0.0.1:8000/test/
+# ~200 req/s on my machine
+

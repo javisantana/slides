@@ -1,0 +1,35 @@
+# 
+# -- deploy II apache
+#
+
+#
+# install mysql
+
+# credentials must match with specified in local_settings.py
+echo "mysql-server-5.0 mysql-server/root_password password root" | sudo debconf-set-selections
+echo "mysql-server-5.0 mysql-server/root_password_again password root" | sudo debconf-set-selections
+
+sudo apt-get install -y  mysql-server mysql-client libmysqlclient15-dev
+
+# create a test database
+
+echo "create database test character set utf8" | mysql -uroot -proot
+
+#
+# install apache and remove default configuration
+
+sudo aptitude -y install apache2 libapache2-mod-wsgi
+sudo rm -rf /etc/apache2/apache2.conf
+sudo ln -s /home/vagrant/app/deploy/apache2.conf /etc/apache2/apache2.conf
+
+# now link local_settings.py with suitable database settings
+
+ln -s /home/vagrant/app/deploy/local_settings.py /home/vagrant/app/django-template/local_settings.py
+
+# set database
+cd /home/vagrant/app/django-template/
+./env/bin/pip install -r ../deploy/production-requirements.txt
+./env/bin/python manage.py syncdb # create admin user test/test
+./env/bin/python manage.py migrate
+
+sudo invoke-rc.d apache2 restart
