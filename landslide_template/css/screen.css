@@ -61,6 +61,9 @@ div.slide p {
 #header_content #control a {
     margin-right: 5px;
 }
+#header_content #control span {
+    margin-right: 5px;
+}
 /* Content */
 
 header:not(:only-child) {

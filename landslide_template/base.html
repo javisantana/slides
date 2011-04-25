@@ -27,6 +27,7 @@
             window.location.hash = slide
             $('#next').attr('href', '#' + (slide+1))
             $('#prev').attr('href', '#' + (slide-1))
+            $('#page_number').html(slide + '/{{num_slides}}')
         }
         function next() {
             goto(curr_slide + 1);
@@ -79,10 +80,11 @@
 <body>
   <div id="header">
     <div id="header_content">
-        {{ slides.0.header }}
+        {{ slides.0.header }} 
         <div id="control" >
+            <a id="show" href="#" style="margin-right: 50px">show comments</a> 
             <a id="prev" href="#"> &larr; prev </a>
-            <a id="show" href="#">show comments</a>
+            <span id="page_number">1</span>
             <a id="next" href="#"> next &rarr;</a>
         </div>
     </div>
