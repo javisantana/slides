@@ -53,9 +53,12 @@
             $("#show").click(function() {
                 if ($('p').is(":visible")) {
                     $('p').css({'display': 'none'});
+                    $(this).html('show comments');
                 } else {
                     $('p').fadeIn(); //css({'display': 'block'});
+                    $(this).html('hide comments');
                 }
+                return false;
             });
               var handleBodyKeyDown = function(event) {
                 // console.log(event.keyCode);
@@ -79,7 +82,7 @@
         {{ slides.0.header }}
         <div id="control" >
             <a id="prev" href="#"> &larr; prev </a>
-            <a id="show" href="#">comments</a>
+            <a id="show" href="#">show comments</a>
             <a id="next" href="#"> next &rarr;</a>
         </div>
     </div>
