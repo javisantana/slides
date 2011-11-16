@@ -36,7 +36,7 @@ pip install -E env -r requirements.txt
 # prepare and launch
 ./env/bin/python manage.py syncdb
 ./env/bin/python manage.py migrate
-./env/bin/python manage.py runserver
+./env/bin/python manage.py runserver 0.0.0.0:8000
 # running on 8000
 
 # now test server from *host* machine
