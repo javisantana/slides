@@ -1,0 +1,18 @@
+
+.content {
+  color: #333;
+  font-family: helvetica neue, arial;
+}
+h1, h2 {
+  color: #000;
+  font-family: helvetica neue, arial;
+}
+h1 {
+  font-size: 6em;
+}
+.content::after {
+  position: absolute;
+  right: 120px;
+  bottom: 120px;
+  content: url(jay_small.png);
+}
