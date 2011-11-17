@@ -22,10 +22,10 @@
 * tornado features
 * examples
 
-!SLIDE
-# asynchronous
+!SLIDE corte center
+# **asynchronous**
 # == 
-#HYPE? 
+#**HYPE**? 
 
 !SLIDE center
 #life is evented#
@@ -68,7 +68,7 @@
             fn = callback_for(fd, event_type)
             fn()
 
-!SLIDE center
+!SLIDE center corte
 #TORNADO#
 ## **async** web framework ##
 
@@ -78,8 +78,11 @@
 - flask
 - pylons/pyramid, turbogears ...
 
+!SLIDE center
+#sorry, **no benchmarks**#
+
 !SLIDE center 
-#features#
+#overview#
 - small · fast · simple
 - focus on fundamentals: no models, routes, templates...
 - non-blocking I/O
@@ -99,10 +102,12 @@
         import tornado.ioloop
         import tornado.web
 
+        # controller
         class MainHandler(tornado.web.RequestHandler):
             def get(self):
                 self.write("Hello, world")
 
+        # router + settings
         application = tornado.web.Application([
             (r"/", MainHandler),
         ])
@@ -123,6 +128,19 @@
     Server: TornadoServer/2.1.1
 
     Hello, world
+
+!SLIDE corte center
+#features#
+
+
+!SLIDE small
+#templates
+
+    @@@ html 
+        <!-- index.html -->
+        <html>
+            <h1>{{msg}}</h1>
+        </html>
 
 !SLIDE small
 #templates
@@ -173,17 +191,67 @@
 
     {"msg": "hello!"}
 
-!SLIDE bullets
+!SLIDE  small
 # templates
- - herencia
+ - inherance 
  - for, if, autoescape...
  - Modules
+ - **no limits**, just python code
+
+        @@@ html 
+        {% for student in 
+            [p for p in people 
+                if p.student and p.age > 23] %}
+          <li>{{ epic_function(student.name) }}</li>
+        {% end %}
+
+!SLIDE smaller
+
+    @@@ python
+
+    SEARCH = "http://search.twitter.com/search.json?q=bcndevconf"
+    class APIHandler(tornado.web.RequestHandler):
+        @tornado.web.asynchronous
+        def get(self):
+          http = tornado.httpclient.AsyncHTTPClient()
+          http.fetch(SEARCH,
+            callback=self.async_callback(
+                self.on_response # <== call here when done
+            )
+          )
+
+        def on_response(self, response): # <== HERE!
+            if response.error:
+                raise tornado.web.HTTPError(500)
+            json = tornado.escape.json_decode(response.body)
+            self.write({
+              "twits": [x['text'] for x in json["results"]]
+            })
+            self.finish()
+
+!SLIDE commandline
+    $ curl http://localhost:8888/api | python -m json.tool
+
+    {
+        "twits": [
+            "Llegando a la. #bcndevconf A conocer a Lucia @wiseri :-)", 
+            "De camino a #bcndevconf. Tres d\u00edas de congreso en el museo mar\u00edtimo de barcelona. A ver q tal", 
+            "On my way to BCN with @davideme and tomorrow BCNDevConf!", 
+            "@wulczer vas a estar t\u00fa en la bcndevconf hablando de ducksboard?", 
+            "In extremis, per\u00f2 l'equip de @shopsial acaba de comprar els early tickets per el #bcndevconf Ens veiem all\u00e0 la setmana que ve!!", 
+            "@ValentiGoClimb @bcndevconf see you there!", 
+            "+1 RT @ValentiGoClimb: i will be in @bcndevconf on Saturday 19! #bdc11", 
+            "i will be in @bcndevconf on Saturday 19! #bdc11"
+        ]
+    }
+
+!SLIDE bullets
+# non-blocking requests
+
 
 !SLIDE bullets
 # secure cookies 
 
-!SLIDE bullets
-# non-blocking requests
 
 
 !SLIDE end bullets
@@ -192,6 +260,12 @@
 ##¿preguntas?##
 
 @javisantana
+
+!SLIDE 
+# refs
+* http://www.tornadoweb.org/
+* http://bret.appspot.com/entry/tornado-web-server
+* code
     
 
 

@@ -16,3 +16,14 @@ h1 {
   bottom: 120px;
   content: url(jay_small.png);
 }
+
+.corte {
+    background-color: rgb(211, 79, 36);
+}
+.corte h1, .corte p, .corte h2 {
+    color: white !important;
+}
+
+.smaller {
+    font-size: 60%;
+}
