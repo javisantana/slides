@@ -1,13 +1,26 @@
-
 <html>
 <script>
-var ws = new WebSocket("ws://localhost:8888/api");
 
-ws.onopen = function() {
-   ws.send("Hello, world");
-};
-ws.onmessage = function (evt) {
-   document.body.write(evt.data);
-};
+window.onload = function() {
+
+    var WS = typeof WebSocket === 'function' ? WebSocket : MozWebSocket;
+    var ws = new WS("ws://localhost:8888/api");
+
+    ws.onopen = function() {
+       ws.send("Hello");
+    };
+
+    ws.onmessage = function (evt) {
+       var h = "<h1>" + new Date().toString() + "</h1>";
+       h += "<ul>";
+       JSON.parse(evt.data).twits.forEach(function(r) {
+          h += "<li>" + r;
+       });
+       h += "</ul>";
+       document.body.innerHTML = h;
+    };
+}
 </script>
+<body>
+</body>
 </html>

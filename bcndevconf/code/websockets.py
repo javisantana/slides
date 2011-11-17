@@ -11,33 +11,30 @@ def check_twitter(s='bcndevcon'):
                callback=new_twitts)
 
 def new_twitts(response):
-    if response.error: raise tornado.web.HTTPError(500)
-    json = tornado.escape.json_decode(response.body)
-    print {"twits": [x['text'] for x in json["results"]]}
+    if not response.error: 
+        json = tornado.escape.json_decode(response.body)
+        data = {"twits": [x['text'] for x in json["results"]]}
+        broadcast(data)
 
 clients = []
 
 def broadcast(data):
     for c in clients:
-        c.write_message(c)
+        c.write_message(data)
 
 p = PeriodicCallback(check_twitter, 3000)
-#p.start()
+p.start()
 
 
 class APIWebSocket(websocket.WebSocketHandler):
     def open(self):
-        print "WebSocket opened"
-        #clients.append(self)
-        self.write_message('waiting')
-        self.write_message('waiting')
-        self.write_message('waiting')
+        clients.append(self)
 
     def on_message(self, message):
-        self.write_message(u"You said: " + message)
+        print message
 
     def on_close(self):
-        pass
+        print "client diconnected"
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):

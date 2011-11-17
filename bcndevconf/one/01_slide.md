@@ -5,22 +5,20 @@
 
  &nbsp;
 
- @javisantana · bcndevconf 
-
+ @javisantana · bcndevcon
 
 
 !SLIDE 
 # about me #
 * python developer since 2002
-* graphics
 * @vizzuality // @agroguia
 
 !SLIDE intro 
 # index #
-* Intro async
+* intro async
 * intro tornado
-* tornado features
-* examples
+* tornado features (by example)
+* production 
 
 !SLIDE corte center
 # **asynchronous**
@@ -91,11 +89,8 @@
 #history#
 ## friendfeed => facebook ##
 
-!SLIDE center  
-#misc#
- - active project on github
-![github](tornado_stats.png)
- - **really** good python project example
+!SLIDE center 
+#fist step, hello world
 
 !SLIDE small
     @@@ python
@@ -205,12 +200,17 @@
           <li>{{ epic_function(student.name) }}</li>
         {% end %}
 
+!SLIDE  small
+# async code 
+## external http service example
+
 !SLIDE smaller
 
     @@@ python
 
-    SEARCH = "http://search.twitter.com/search.json?q=bcndevconf"
+    SEARCH = "http://search.twitter.com/search.json?q=bcndevcon"
     class APIHandler(tornado.web.RequestHandler):
+
         @tornado.web.asynchronous
         def get(self):
           http = tornado.httpclient.AsyncHTTPClient()
@@ -221,15 +221,13 @@
           )
 
         def on_response(self, response): # <== HERE!
-            if response.error:
-                raise tornado.web.HTTPError(500)
             json = tornado.escape.json_decode(response.body)
             self.write({
               "twits": [x['text'] for x in json["results"]]
             })
             self.finish()
 
-!SLIDE commandline
+!SLIDE commandline small
     $ curl http://localhost:8888/api | python -m json.tool
 
     {
@@ -246,18 +244,165 @@
     }
 
 !SLIDE bullets
-# non-blocking requests
+# websockets
+
+!SLIDE smaller 
+    @@@ javascript 
+    // websocket.html
+    window.onload = function() {
+
+        var WS = typeof WebSocket === 'function' ? WebSocket : MozWebSocket;
+        var ws = new WS("ws://localhost:8888/api");
+
+        ws.onopen = function() {
+           ws.send("Hello");
+        };
+
+        ws.onmessage = function (evt) {
+           var h = "<h1>" + new Date().toString() + "</h1>";
+           h += "<ul>";
+           JSON.parse(evt.data).twits.forEach(function(r) {
+              h += "<li>" + r;
+           });
+           h += "</ul>";
+           document.body.innerHTML = h;
+        };
+    }
+
+!SLIDE smaller
+    @@@ python
+    # websocket handler
+    # clients
+    clients = [] #<= 1 thread!
+
+    class APIWebSocket(websocket.WebSocketHandler):
+        def open(self):
+            clients.append(self) # <= add the client to the list
+
+        def on_message(self, message):
+            print message
+
+        def on_close(self):
+            print "client diconnected"
+            #TODO: remove the client from clients list
+
+    # route
+    application = tornado.web.Application([
+        (r"/api", APIWebSocket),
+    ])
+
+!SLIDE smaller
+    @@@ python
+    # get tweets task
+    def check_twitter(s='bcndevcon'):
+        http = tornado.httpclient.AsyncHTTPClient()
+        http.fetch("http://search.twitter.com/search.json?q=" + s,
+                   callback=new_twitts) #<= callback
+
+    # setup a periodic task
+    p = PeriodicCallback(check_twitter, 3000)
+    p.start()
+
+    # callback for twitter search 
+    def new_twitts(response):
+        json = tornado.escape.json_decode(response.body)
+        data = {"twits": [x['text'] for x in json["results"]]}
+        broadcast(data) # <= broadcast to all clients
 
 
-!SLIDE bullets
-# secure cookies 
+    def broadcast(data):
+        for c in clients:
+            c.write_message(data) #<= write to websockets
 
 
+!SLIDE 
+#socket.io#
+## tornadio2 ##
+
+
+!SLIDE
+# more
+- secure cookies
+- mysql database helper (sync)
+- oauth/twitter/gooogle/facebook mixins
+- twisted connector
+- decorators: auth, **gen**
+- process management
+- python3!
+
+!SLIDE
+# the bad
+- expection handling (solved in 2.x) 
+- no ORM, forms, session...
+- no dev tools (middleware...)
+
+
+!SLIDE corte center
+#production#
+
+!SLIDE 
+#when#
+- API
+- connectors
+- fast/realtime stuff
+
+!SLIDE  small
+#when **not** to use#
+- as general framework
+- no ORM
+- no forms handling
+- no general 3rd party plugins
+- 3rd party plugins => **broken** => be careful
+
+!SLIDE 
+#setup#
+ - behind a proxy (nginx)
+ - websockets 
+    - HTTP 1.1 proxy
+    - tornado => port XXXX
+ - workers + redis
+
+!SLIDE small
+#nginx#
+    @@@ sh
+    # simplified config
+    http {
+        upstream frontends {
+            server 127.0.0.1:8000;
+        }
+        server {
+            location ^~ /static/ {
+                root /home/www/app/static;
+                if ($query_string) { expires max; }
+            }
+            location / {
+                proxy_pass http://frontends;
+            }
+        }
+    }
+
+!SLIDE smaller
+#supervisor#
+    @@@ sh
+    [program:tornado]
+    command=/home/www/app/env/bin/python /home/www/app/src/app.py
+    directory=/home/www/app/
+    user=no_root;
+
+!SLIDE corte center
+#final thoughts#
+
+!SLIDE 
+## simple
+## fast
+## no silver bullet
+## good python project
+## micro framework
 
 !SLIDE end bullets
 # fin
 
-##¿preguntas?##
+##¿Questions?##
 
 @javisantana
 
@@ -265,8 +410,8 @@
 # refs
 * http://www.tornadoweb.org/
 * http://bret.appspot.com/entry/tornado-web-server
-* code
-    
+* tornado code on github
+
 
 
 
